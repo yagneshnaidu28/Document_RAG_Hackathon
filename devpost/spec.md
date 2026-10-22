@@ -32,7 +32,7 @@ PRD ref: `prd.md > The Core Journey`.
 - **Embeddings:** **sentence-transformers** local model (`all-MiniLM-L6-v2`), via `langchain_huggingface`. Accepted recommendation: free, offline, no key. https://www.sbert.net/
 - **Vector store:** **Chroma** via `langchain_chroma`, saved to a local folder. Learner choice. https://docs.trychroma.com/
 - **Retriever:** plain top-k similarity, **k = 5**. Learner choice. Tradeoff: always returns 5 chunks, even for off-topic questions, so "not found" relies on the prompt.
-- **LLM:** **Gemini** via `langchain_google_genai`, API key in a local `.env` (learner creates it). Verified in the build: `gemini-2.5-flash` is listed but returns 404 "no longer available to new users" for this key. The chat tries `gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview` in order and moves on when one is rate-limited or retired (override with `GEMINI_MODELS` in `.env`). https://ai.google.dev/gemini-api/docs
+- **LLM:** **Gemini** via `langchain_google_genai`, API key in a local `.env` (learner creates it). Verified in the build: `gemini-2.5-flash` is listed but returns 404 "no longer available to new users" for this key. The chat tries `gemini-3.5-flash-lite` (about 2 s per answer), then `gemini-3.8-flash`, `gemini-3-flash-preview`, `gemini-3.1-flash-lite` (slower "thinking" models, 15-20 s) in order, with a 30-second timeout and no library retries per model, and moves on when one is rate-limited, slow or retired (override with `GEMINI_MODELS` in `.env`). https://ai.google.dev/gemini-api/docs
 - **Frontend:** **React** with Vite, dev server on port 4000. https://react.dev/ and https://vite.dev/
 - Exact library versions are unverified; pin them during build step 1 and check they install together.
 
@@ -58,7 +58,7 @@ PRD ref: `prd.md > Features and Behavior > Upload`.
 PRD ref: `prd.md > Features and Behavior > Replacing and deleting the PDF`.
 
 ### Retrieval and chat
-`POST /chat`: retrieve top 5, build the strict grounding prompt (context chunks, last 6 messages, question; rule: use only the context; otherwise reply exactly "not found in this document."), call Gemini, save to the session. Refuses with "no document to search" if none exists.
+`POST /chat`: for normal questions retrieve top 5 (plain similarity, k=5); for whole-document questions (summary, overview, main topics, "what is this document about") sample 14 chunks evenly across the document instead, since no 5 chunks are closest to "summary of the document"; build the strict grounding prompt (context chunks, last 6 messages, question; rule: use only the context; otherwise reply exactly "not found in this document."), call Gemini, save to the session. Refuses with "no document to search" if none exists.
 PRD ref: `prd.md > Features and Behavior > Chat`.
 
 ### Sessions
