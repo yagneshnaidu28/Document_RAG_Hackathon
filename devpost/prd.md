@@ -22,16 +22,17 @@ Two screens.
 
 **Upload screen** (first visit, or when no document exists): an upload area for a PDF. Shows the loading indicator while the PDF is processed, and "this document is invalid" for unusable files.
 
-**Agent screen:**
-- **Header:** the logo on the left (provided by the learner; a blue bot holding a book) and the heading "Document Agents" in the middle (h5 or h6, whichever looks right).
-- **Left sidebar:** collapsible (open/close). At the top is a "New chat" button. Below it is the list of past conversations. Each row shows the conversation's first question as its title, plus a timestamp, and has its own delete button.
-- **Document area:** to the right of the sidebar and below the header, one component showing the uploaded PDF as an icon (not the document's contents). Hovering the icon reveals a delete button. A way to upload a new PDF is also here.
-- **Chat:** below the document component. The conversation fills the area, and the input bar with an Enter arrow sits at the bottom.
+**Agent screen** (revised during the build to follow the learner's reference screenshot of their earlier app):
+- **Left sidebar** (collapsible with a menu button): logo and "Document Agents" at the top, a "New chat" button, then a HISTORY list. Each past conversation shows its first question as the title with a timestamp, and has its own delete button.
+- **Top bar of the main area:** menu button, the title "New chat," and a line saying whether a document is loaded.
+- **Document panel:** a dashed upload box (click or drag and drop, PDF only, up to 40 MB). Below it, one row for the uploaded PDF: PDF badge, file name, chunk count and upload time, and an always-visible delete (trash) button. Uploading a new PDF through the box replaces the old one.
+- **Chat:** a centered "Ask anything about your document" prompt when empty, messages above, and a rounded input bar with a send arrow at the bottom ("Enter to send, Shift+Enter for a new line").
+- Not included from the reference (new features, not in this POC): the "All documents" selector and Documents button (multiple documents), history select-all checkboxes, voice input, and suggestion chips.
 
 ## Look and Feel
-- Blue and white theme; black text.
-- Clean, clear, minimal.
-- Logo: a bot/agent holding a book, in blue (supplied by the learner).
+- Blue and white theme (navy buttons, white panels, light grey page background); black text.
+- Clean, clear, minimal, modeled on the learner's reference screenshot.
+- Logo: the bot reading a book (supplied by the learner), shown as a small rounded badge in the sidebar.
 - Font character: not specified; a clean, plain font is assumed.
 
 ## Features and Behavior

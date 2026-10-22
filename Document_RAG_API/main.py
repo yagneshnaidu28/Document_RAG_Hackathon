@@ -4,21 +4,30 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from chunking.chunking_pdf import NoReadableText, chunk_pdf  # noqa: E402
 from rag.chat import answer  # noqa: E402
-from rag.vectorstore import STORAGE, add_chunks  # noqa: E402
+from rag.vectorstore import STORAGE, add_chunks, clear_store, get_embeddings  # noqa: E402
 
 MAX_BYTES = 40 * 1024 * 1024
 UPLOADS = STORAGE / "uploads"
 DOCUMENT_FILE = STORAGE / "document.json"
 
-app = FastAPI(title="Document Agents API")
+@asynccontextmanager
+async def lifespan(_app):
+    get_embeddings()  # load the embedding model now, not during the first upload
+    yield
+
+
+app = FastAPI(title="Document Agents API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4000", "http://127.0.0.1:4000"],
@@ -46,7 +55,7 @@ async def upload_pdf(file: UploadFile):
     pdf_path.write_bytes(data)
 
     try:
-        chunks = chunk_pdf(str(pdf_path))
+        chunks = await run_in_threadpool(chunk_pdf, str(pdf_path))
     except (NoReadableText, Exception):
         pdf_path.unlink(missing_ok=True)
         raise invalid()
@@ -55,12 +64,13 @@ async def upload_pdf(file: UploadFile):
     for old in UPLOADS.glob("*.pdf"):
         if old != pdf_path:
             old.unlink(missing_ok=True)
-    count = add_chunks(chunks)
+    count = await run_in_threadpool(add_chunks, chunks)
     DOCUMENT_FILE.write_text(
         json.dumps(
             {
                 "document_id": pdf_path.stem,
                 "filename": name,
+                "chunks": count,
                 "uploaded_at": datetime.now(timezone.utc).isoformat(),
             }
         ),
@@ -85,3 +95,35 @@ def chat(req: ChatRequest):
         return {"answer": answer(question, req.history)}
     except Exception:
         raise HTTPException(status_code=502, detail="the answer could not be generated, please try again")
+
+
+def current_document():
+    if not DOCUMENT_FILE.exists():
+        return None
+    try:
+        return json.loads(DOCUMENT_FILE.read_text(encoding="utf-8"))
+    except ValueError:
+        return None
+
+
+@app.get("/document")
+def get_document():
+    doc = current_document()
+    if not doc:
+        return {"exists": False}
+    return {
+        "exists": True,
+        "document_id": doc["document_id"],
+        "filename": doc["filename"],
+        "chunks": doc.get("chunks"),
+        "uploaded_at": doc.get("uploaded_at"),
+    }
+
+
+@app.delete("/document")
+def delete_document():
+    clear_store()
+    for pdf in UPLOADS.glob("*.pdf"):
+        pdf.unlink(missing_ok=True)
+    DOCUMENT_FILE.unlink(missing_ok=True)
+    return {"ok": True}

@@ -29,7 +29,7 @@ Build mode: learn
   Learner check: Ask a question you know the PDF answers, then one it does not cover, and say whether the answers are right and whether the "not found" holds.
   Commit: `Add grounded chat with Gemini and retrieval tests`
 
-- [ ] **3. You get the full agent screen: header, PDF card, replace and delete**
+- [x] **3. You get the full agent screen: header, PDF card, replace and delete**
   Becomes usable: The agent screen layout with the logo header, the PDF icon card (hover delete with "are you sure?", upload a new PDF), the no-document state, and the chat in place.
   Why now: Puts the kernel inside the product's real layout and covers the document lifecycle before conversations depend on it.
   PRD ref: `prd.md > Screens and Layout`, `prd.md > Features and Behavior > Replacing and deleting the PDF`
@@ -86,3 +86,5 @@ Activity mode:
 - Gemini model: `gemini-2.5-flash` returns 404 for this key, and the free tier allows 20 requests per day per model — the chat now falls back across several Gemini models in order (still Gemini, learner's choice unchanged).
 - Until slice 4 adds saved sessions, `POST /chat` takes the last messages from the request (`history`) instead of a session id — the site keeps the conversation in memory for now.
 - Build-time retrieval test: 5/5 covered questions answered correctly and 5/5 uncovered returned exactly "not found in this document". Follow-up check: "Which one is biggest?" works, but "Explain that more simply" returns "not found in this document" because the question is searched as typed (the tradeoff the learner accepted); revisit adding a rewrite step if it matters.
+- Layout restyled to match the learner's reference screenshot: logo and name move into the sidebar (no top header band), upload becomes a dashed drop box with drag and drop, the PDF row shows chunk count and upload time with an always-visible delete button, and the chat gets a centered prompt and rounded input bar. Multiple-document selector, select-all, voice input and suggestion chips from the reference were left out as new features. `prd.md` and `spec.md` updated to match.
+- Upload speed tuned at the learner's request: a 402-page PDF went from 62 s to about 35-42 s and no longer waits for the model to load on the first upload. Model preloaded at server start; pypdf page reading parallelised for PDFs of 40+ pages; torch uses all cores; upload work moved off the server's main loop. ONNX and bfloat16 gave no gain, so embedding speed is the remaining floor.

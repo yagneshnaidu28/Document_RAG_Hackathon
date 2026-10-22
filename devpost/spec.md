@@ -45,7 +45,7 @@ Runs locally on Windows; requires Python 3.12, Node 24, and a Gemini API key.
 - Deployment: not planned. Submission still needs the demo video and a public GitHub repository (`.env`, `storage/`, and the venv stay out of git).
 
 ## Look and Feel
-PRD ref: `prd.md > Look and Feel`. Blue and white theme with black text. Clean, minimal, plenty of white space. Plain system sans-serif font (the learner named none). Primary blue for header, buttons, and the chat send arrow; light blue tint for the sidebar. Calm copy. The learner provides the logo (blue bot holding a book), placed in `Document_RAG_APP/src/assets/`. Plain CSS handles all of this.
+PRD ref: `prd.md > Look and Feel`. Blue and white theme with navy buttons, white panels, a light grey page background, and black text. Clean, minimal, plenty of white space, modeled on the learner's reference screenshot. Plain system sans-serif font (the learner named none). Primary blue for header, buttons, and the chat send arrow; light blue tint for the sidebar. Calm copy. The learner provides the logo (blue bot holding a book), placed in `Document_RAG_APP/src/assets/`. Plain CSS handles all of this.
 
 ## Components
 
@@ -70,7 +70,7 @@ Drop/pick area, client-side checks, three-dots loader, "this document is invalid
 PRD ref: `prd.md > Screens and Layout`.
 
 ### Frontend: Agent screen
-`Header` (logo + "Document Agents"), `Sidebar` (collapsible, New chat, conversation rows with delete), `DocumentCard` (PDF icon, hover delete, upload-new), `Chat` (messages, three-dots while waiting, input + arrow), `ConfirmDialog` ("are you sure?"). Read-only sessions disable the input.
+`Sidebar` (logo, name, New chat, history list; collapsible), a top bar (menu button, title, document status), `DocumentPanel` (`Dropzone` + PDF row with delete), `Chat` (empty-state prompt, messages, three-dots while waiting, input bar), `ConfirmDialog` ("are you sure?"). Read-only sessions disable the input. Layout follows the learner's reference screenshot.
 PRD ref: `prd.md > Screens and Layout`, `prd.md > States and Boundaries`.
 
 ## Data Model
@@ -99,7 +99,7 @@ Document_rag/
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── api.js             # calls to the API
-│   │   ├── components/        # UploadScreen, Header, Sidebar, DocumentCard, Chat, ConfirmDialog
+│   │   ├── components/        # UploadScreen, Dropzone, Sidebar, DocumentPanel, Chat, ConfirmDialog
 │   │   └── assets/            # logo
 │   ├── package.json
 │   └── vite.config.js         # dev port 4000
@@ -117,7 +117,8 @@ Document_rag/
 - **Gemini fails** (no key, rate limit, offline) → a short error message in the chat; the user's question stays saved. Every model in the list must fail before this shows.
 - **Off-topic question retrieves 5 weak chunks and the model answers anyway** → mitigated by the strict prompt and tested during the build with questions the document does and does not cover. If it leaks, add a score threshold.
 - **Follow-up questions without a rewrite step** → may retrieve poor chunks. Tested during the build.
-- **Slow upload on a very large PDF** → the loader covers the wait; measured: 402 pages in about 62 seconds (page loading and embedding dominate).
+- **Slow upload on a very large PDF** → the loader covers the wait; measured: a 402-page PDF takes about 35-42 seconds after tuning (was 62 s), a small PDF under a second. Embedding the chunks is the floor (about 40 chunks per second on an 8-core CPU).
+- **Speed-ups applied:** the embedding model loads when the server starts, big PDFs (40+ pages) are read in parallel with pypdf across CPU cores, torch uses every core, and upload work runs off the server's main loop so other requests stay responsive. ONNX and bfloat16 were measured and gave no gain.
 - **Site cannot reach the API** → "cannot reach the server, please try again" (separate from "this document is invalid").
 
 ## What Was Simplified and Why

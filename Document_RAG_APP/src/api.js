@@ -28,3 +28,14 @@ export async function sendChat(question, history) {
   if (!res.ok) throw new Error(data.detail || 'something went wrong, please try again')
   return data.answer
 }
+
+export async function getDocument() {
+  const res = await fetch(`${API}/document`)
+  if (!res.ok) throw new Error('server')
+  return res.json()
+}
+
+export async function deleteDocument() {
+  const res = await fetch(`${API}/document`, { method: 'DELETE' })
+  if (!res.ok) throw new Error('server')
+}

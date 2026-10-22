@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { sendChat } from '../api.js'
 
-export default function Chat() {
+export default function Chat({ disabled }) {
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [waiting, setWaiting] = useState(false)
@@ -12,9 +12,9 @@ export default function Chat() {
   }, [messages, waiting])
 
   async function send(e) {
-    e.preventDefault()
+    e?.preventDefault()
     const question = text.trim()
-    if (!question || waiting) return
+    if (!question || waiting || disabled) return
     const history = messages.filter((m) => !m.error)
     setMessages([...history, { role: 'user', text: question }])
     setText('')
@@ -29,10 +29,24 @@ export default function Chat() {
     }
   }
 
+  function onKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      send()
+    }
+  }
+
+  const empty = messages.length === 0 && !waiting
+
   return (
     <section className="chat">
       <div className="messages">
-        {messages.length === 0 && <p className="hint">Ask a question about your document.</p>}
+        {empty && (
+          <div className="empty-state">
+            <h2>{disabled ? 'No document to search' : 'Ask anything about your document'}</h2>
+            {disabled && <p className="hint">Upload a PDF above to start asking questions.</p>}
+          </div>
+        )}
         {messages.map((m, i) => (
           <div key={i} className={`bubble ${m.role}${m.error ? ' error-bubble' : ''}`}>
             {m.text}
@@ -46,16 +60,25 @@ export default function Chat() {
         <div ref={bottom} />
       </div>
       <form className="input-bar" onSubmit={send}>
-        <input
+        <textarea
+          rows={1}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Ask a question…"
+          onKeyDown={onKeyDown}
+          placeholder={disabled ? 'No document to search' : 'Ask a question about your document…'}
+          disabled={disabled}
           autoFocus
         />
-        <button type="submit" className="send" disabled={waiting || !text.trim()} aria-label="Send">
-          ➤
+        <button
+          type="submit"
+          className="send"
+          disabled={disabled || waiting || !text.trim()}
+          aria-label="Send"
+        >
+          →
         </button>
       </form>
+      <p className="input-hint">Enter to send · Shift + Enter for a new line</p>
     </section>
   )
 }

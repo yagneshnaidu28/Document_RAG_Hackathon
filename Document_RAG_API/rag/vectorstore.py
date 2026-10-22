@@ -1,4 +1,5 @@
 """Embeddings and the Chroma vector store (one document at a time)."""
+import os
 import shutil
 from functools import lru_cache
 from pathlib import Path
@@ -14,7 +15,12 @@ EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 @lru_cache(maxsize=1)
 def get_embeddings():
-    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+    import torch
+
+    torch.set_num_threads(os.cpu_count() or 4)  # torch defaults to half the cores
+    return HuggingFaceEmbeddings(
+        model_name=EMBEDDING_MODEL, encode_kwargs={"batch_size": 32}
+    )
 
 
 def get_store() -> Chroma:
