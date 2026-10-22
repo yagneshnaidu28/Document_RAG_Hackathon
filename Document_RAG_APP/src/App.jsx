@@ -72,6 +72,8 @@ export default function App() {
     setToDelete(null)
     try {
       await deleteSession(s.id)
+    } catch {
+      /* the refresh below shows the real state */
     } finally {
       await refreshSessions()
       if (s.id === activeId) newChat()

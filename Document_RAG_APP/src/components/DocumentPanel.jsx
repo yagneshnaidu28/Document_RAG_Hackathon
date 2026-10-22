@@ -13,6 +13,8 @@ export default function DocumentPanel({ document, onChanged }) {
     setConfirming(false)
     try {
       await deleteDocument()
+    } catch {
+      /* the refresh below shows the real state */
     } finally {
       await onChanged()
     }

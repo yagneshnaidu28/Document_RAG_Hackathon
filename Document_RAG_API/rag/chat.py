@@ -1,6 +1,6 @@
 """Retrieval and the strict grounded answer.
 
-Normal questions: top-8 chunks from a hybrid search. Meaning-based (embedding)
+Normal questions: top-7 chunks from a hybrid search. Meaning-based (embedding)
 similarity alone cannot match exact tokens such as "Article 373" or "21.", so a
 keyword (BM25) ranking is merged with it by reciprocal rank fusion.
 Whole-document questions (summary, overview, main topics): a handful of chunks
@@ -18,7 +18,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from rag.vectorstore import STORAGE, get_store
 
-K = 8  # chunks kept after merging the two searches (was 5 with embeddings alone)
+K = 7  # chunks kept after merging the two searches (learner chose top 7)
 KEYWORD_WEIGHT = 1.5
 OVERVIEW_CHUNKS = 14
 HISTORY_MESSAGES = 6
@@ -69,6 +69,14 @@ def _models() -> list[str]:
     return [m.strip() for m in raw.split(",") if m.strip()] or DEFAULT_MODELS
 
 
+def _is_key_problem(error: Exception) -> bool:
+    text = str(error)
+    return any(
+        marker in text
+        for marker in ("API_KEY_INVALID", "API key not valid", "UNAUTHENTICATED", "PERMISSION_DENIED")
+    ) or "GOOGLE_API_KEY" in text
+
+
 def _invoke(messages):
     """Try each model in turn; a slow, rate-limited or retired one is skipped
     after at most MODEL_TIMEOUT_SECONDS (no long library retries)."""
@@ -83,6 +91,8 @@ def _invoke(messages):
             ).invoke(messages)
         except Exception as e:
             last_error = e
+            if _is_key_problem(e):
+                break  # every model would fail the same way; do not wait on them
     raise last_error
 
 
