@@ -72,15 +72,15 @@ Outcome: the learner explored the running app after the search-quality and chunk
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: 
-Route and stops: 
-Edit outcome: 
-Reflection: 
-Activity mode: 
+Activity and evidence: Focused alternative offered, built on a real moment: telling two causes of "not found" apart ("article 457" was correct because the PDF has no such article; "article 32" was a real search failure) and measuring with a fixed question list before changing anything. Evidence: Revisions entries above; `Document_RAG_API/tests/eval_retrieval.py` run on the loaded Constitution PDF: 15/16 questions had their answer in the top 7 chunks, the one miss being the bare "article 17". The learner did not take up the follow-up question about the miss, so this is recorded as an evidence-based recap with prior practice connected, not hands-on practice.
+Route and stops: Reference route only (not toured interactively), in `devpost/app-map.html`: `Chat.jsx` send -> `main.py` chat -> `rag/chat.py` retrieve/answer -> `chunking/chunking_pdf.py` _split_by_headings.
+Edit outcome: Not applicable (no edit made).
+Reflection: Offered and answered; the personal answer is kept in the ignored learner profile.
+Activity mode: Recap with prior practice connected; app map generated from code at commit e4f841c and opened in the browser (path: `devpost/app-map.html`).
 
 ## Revisions
 - Chunking changed from SemanticChunker to RecursiveCharacterTextSplitter — semantic chunking took over 4 minutes on a 402-page PDF (it embeds every sentence on the CPU); the learner chose to switch, and the same file now uploads in about 62 seconds.
