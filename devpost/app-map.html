@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document Agents: App Map</title>
+<style>
+  :root { --bg:#f6f7fb; --card:#fff; --ink:#111; --muted:#5b6475; --accent:#26296b; --blue:#1c64f2; --line:#e3e6ee; --soft:#eaf1ff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#10131c; --card:#181d2a; --ink:#eef1f8; --muted:#9aa4b8; --accent:#9db0ff; --blue:#7ea4ff; --line:#2b3347; --soft:#1f2740; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,Segoe UI,sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { margin:0 0 4px; color:var(--accent); }
+  .sub { color:var(--muted); margin:0 0 18px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 20px; margin:16px 0; }
+  h2 { margin:0 0 8px; font-size:1.1rem; color:var(--accent); }
+  code { background:var(--soft); padding:1px 6px; border-radius:6px; font-size:.9em; }
+  details { border:1px solid var(--line); border-radius:10px; margin:8px 0; padding:8px 12px; }
+  summary { cursor:pointer; font-weight:600; }
+  summary:focus-visible, a:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
+  ul { padding-left:20px; margin:6px 0; }
+  pre { background:var(--soft); padding:12px; border-radius:10px; overflow-x:auto; font-size:.85rem; margin:8px 0; }
+  svg { width:100%; height:auto; }
+  svg text { fill:var(--ink); font:12.5px system-ui,sans-serif; }
+  svg .b { fill:var(--card); stroke:var(--blue); stroke-width:1.5; }
+  svg .e { fill:var(--card); stroke:#e8590c; stroke-width:1.5; }
+  svg .s { fill:var(--card); stroke:#2b8a3e; stroke-width:1.5; }
+  svg .l { fill:var(--muted); font-size:11px; }
+  svg .arrow { stroke:var(--muted); stroke-width:1.5; fill:none; marker-end:url(#a); }
+  table { border-collapse:collapse; width:100%; font-size:.94rem; }
+  td, th { text-align:left; padding:6px 10px 6px 0; vertical-align:top; border-bottom:1px solid var(--line); }
+  .snap { color:var(--muted); font-size:.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Document Agents: App Map</h1>
+  <p class="sub">A one-page guide to where things live, so you know where to start the next time you change something.</p>
+
+  <section>
+    <h2>What the app is</h2>
+    <p>Upload one PDF, then ask questions that are answered <strong>only from that document</strong>; if the document does not contain the answer, it says "not found in this document." Four main pieces:</p>
+    <ul>
+      <li><strong>The site</strong> (React, port 4000): upload box, sidebar of saved conversations, chat.</li>
+      <li><strong>The API</strong> (FastAPI, port 8000): receives the PDF and the questions.</li>
+      <li><strong>The search</strong> (Chroma + a local embedding model): finds the 7 chunks of the PDF closest in meaning to a question.</li>
+      <li><strong>Gemini</strong>: writes the answer from those chunks only, under a strict rule.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>One action, end to end: asking "what does article 32 say"</h2>
+    <svg viewBox="0 0 860 250" role="img" aria-label="Question travels from the chat box through the API and similarity search to Gemini and back as an answer">
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8896b3"/></marker></defs>
+      <rect class="b" x="10" y="20" width="150" height="62" rx="9"/><text x="85" y="46" text-anchor="middle">Chat box</text><text x="85" y="64" text-anchor="middle" class="l">Chat.jsx · send()</text>
+      <rect class="b" x="200" y="20" width="150" height="62" rx="9"/><text x="275" y="46" text-anchor="middle">POST /chat</text><text x="275" y="64" text-anchor="middle" class="l">main.py · chat()</text>
+      <rect class="b" x="390" y="20" width="170" height="62" rx="9"/><text x="475" y="46" text-anchor="middle">Similarity search</text><text x="475" y="64" text-anchor="middle" class="l">rag/chat.py · retrieve()</text>
+      <rect class="s" x="600" y="20" width="150" height="62" rx="9"/><text x="675" y="46" text-anchor="middle">Chroma store</text><text x="675" y="64" text-anchor="middle" class="l">storage/chroma (7 chunks)</text>
+      <rect class="e" x="390" y="150" width="170" height="62" rx="9"/><text x="475" y="176" text-anchor="middle">Gemini</text><text x="475" y="194" text-anchor="middle" class="l">rag/chat.py · answer()</text>
+      <rect class="s" x="200" y="150" width="150" height="62" rx="9"/><text x="275" y="176" text-anchor="middle">Saved conversation</text><text x="275" y="194" text-anchor="middle" class="l">storage/sessions/*.json</text>
+      <rect class="b" x="10" y="150" width="150" height="62" rx="9"/><text x="85" y="176" text-anchor="middle">Answer bubble</text><text x="85" y="194" text-anchor="middle" class="l">or "not found..."</text>
+      <path class="arrow" d="M160,51 H200"/><path class="arrow" d="M350,51 H390"/><path class="arrow" d="M560,51 H600"/>
+      <path class="arrow" d="M475,82 V150"/><path class="arrow" d="M390,181 H350"/><path class="arrow" d="M200,181 H160"/>
+    </svg>
+    <p class="snap">The chunks searched here were prepared earlier, when the PDF was uploaded: <code>POST /upload-pdf</code> then <code>chunking/chunking_pdf.py</code>, then embedded and stored in Chroma.</p>
+  </section>
+
+  <section>
+    <h2>A route through the code (reference route)</h2>
+    <p class="snap">This is a suggested way to read the code. It is a reference, not a record of a tour you completed.</p>
+    <details open>
+      <summary>Stop 1: the question leaves the browser</summary>
+      <p><code>Document_RAG_APP/src/components/Chat.jsx</code>, search <code>async function send</code>. It adds your message to the screen, shows the waiting dots, and calls <code>sendChat</code> in <code>Document_RAG_APP/src/api.js</code>, which posts <code>{question, session_id}</code> to the API.</p>
+    </details>
+    <details>
+      <summary>Stop 2: the API finds the evidence and asks Gemini</summary>
+      <p><code>Document_RAG_API/main.py</code>, search <code>@app.post("/chat")</code> (<code>def chat</code>). It loads or creates the conversation, saves your question first, then calls <code>answer()</code> in <code>Document_RAG_API/rag/chat.py</code>. There, <code>retrieve()</code> runs <code>similarity_search</code> for the top <code>K</code> chunks, and <code>SYSTEM_PROMPT</code> tells Gemini to use only those chunks or reply <code>NOT_FOUND</code>. The answer is saved with <code>add_message</code> in <code>Document_RAG_API/sessions.py</code>.</p>
+    </details>
+    <details>
+      <summary>Stop 3: why the right chunk exists to be found</summary>
+      <p><code>Document_RAG_API/chunking/chunking_pdf.py</code>, search <code>def _split_by_headings</code>. At upload time the PDF is cut at its headings and every piece starts with a label such as "Article 32." That label is what lets a question mentioning "article 32" land on the right chunk.</p>
+    </details>
+  </section>
+
+  <section>
+    <h2>To change this, start here</h2>
+    <table>
+      <tr><th>If you want to change...</th><th>start at</th></tr>
+      <tr><td>How many chunks Gemini sees</td><td><code>K = 7</code> in <code>Document_RAG_API/rag/chat.py</code> (then run the evaluation below)</td></tr>
+      <tr><td>The answering rules or the "not found" wording</td><td><code>SYSTEM_PROMPT</code> and <code>NOT_FOUND</code> in <code>Document_RAG_API/rag/chat.py</code></td></tr>
+      <tr><td>Which Gemini models are tried</td><td><code>DEFAULT_MODELS</code> in <code>Document_RAG_API/rag/chat.py</code>, or <code>GEMINI_MODELS</code> in <code>.env</code></td></tr>
+      <tr><td>How documents are split</td><td><code>CHUNK_SIZE</code> and the heading patterns at the top of <code>Document_RAG_API/chunking/chunking_pdf.py</code></td></tr>
+      <tr><td>The search model</td><td><code>EMBEDDING_MODEL</code> in <code>Document_RAG_API/rag/vectorstore.py</code>. Documents uploaded with another model must be uploaded again.</td></tr>
+      <tr><td>Colors and spacing</td><td><code>:root</code> variables at the top of <code>Document_RAG_APP/src/index.css</code></td></tr>
+      <tr><td>The sidebar and history</td><td><code>Document_RAG_APP/src/components/Sidebar.jsx</code> and <code>Document_RAG_API/sessions.py</code></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>A practice to reuse: measure before you change</h2>
+    <p><strong>What happened here.</strong> Questions like "what article 32 says" came back "not found in this document." Before changing anything, the cause was separated from the symptom: for "article 457" the answer was correct (the Constitution ends at Article 395, and the number 457 appears nowhere in the PDF), while for "article 32" the text existed but the search never returned it. Then four ways of chunking and three embedding models were compared on the <em>same</em> list of questions with known answers. Re-chunking alone did not help (about 5 of 14 found); a better model plus heading-aware chunks did (18 of 20). The same list also exposed a regression in one document style before it shipped.</p>
+    <p><strong>Where it lives.</strong> <code>Document_RAG_API/tests/eval_retrieval.py</code> runs a list of questions against the loaded document and reports whether the answer text is in the top 7 chunks. The questions are in <code>Document_RAG_API/tests/questions_constitution.json</code>; the full record is in <code>devpost/checklist.md</code> under Revisions.</p>
+    <p><strong>For another project.</strong> When an agent's output is wrong, write down 10-20 questions whose answers you already know, measure the current behavior, change one thing, and measure again. It keeps "this feels better" from standing in for evidence, and it tells you whether the problem is in finding the information or in using it.</p>
+    <details>
+      <summary>Run the evaluation</summary>
+      <pre>cd Document_RAG_API
+.venv\Scripts\activate
+python tests/eval_retrieval.py tests/questions_constitution.json</pre>
+      <p>Upload the PDF in the app first; the script reads whatever document is currently loaded. It makes no Gemini calls.</p>
+    </details>
+  </section>
+
+  <section>
+    <h2>Run it again</h2>
+    <details open>
+      <summary>Start both servers (from the project folder)</summary>
+      <pre>cd Document_RAG_API
+.venv\Scripts\activate
+uvicorn main:app --port 8000
+
+cd Document_RAG_APP
+npm run dev</pre>
+      <p>Then open <code>http://localhost:4000</code>. First-time setup (virtual environment, <code>pip install -r requirements.txt</code>, your key in <code>Document_RAG_API/.env</code>) is in <code>README.md</code>.</p>
+    </details>
+    <p class="snap">Snapshot of the code at commit <code>e4f841c</code>. The app will keep changing, so file and function names here can drift; search for the names above if a path has moved.</p>
+  </section>
+</main>
+</body>
+</html>
