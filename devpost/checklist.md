@@ -1,0 +1,83 @@
+---
+doc: checklist
+status: draft
+---
+
+# Build Checklist
+
+Build mode: not chosen yet
+
+## Slices
+
+- [ ] **1. You can upload a PDF and it gets chunked and stored**
+  Becomes usable: A running site (port 4000) and API (port 8000). Picking a PDF shows the three-dots loader, then a "ready" message. A bad file shows "this document is invalid." Chunks are saved in Chroma.
+  Why now: This is the riskiest unfamiliar part (PyPDFLoader, semantic chunking, local embeddings, Chroma, FastAPI-to-React wiring). Finding problems here is cheap, and it includes all project bootstrapping.
+  PRD ref: `prd.md > Features and Behavior > Upload`, `prd.md > The Core Journey` (steps 1-3)
+  Spec ref: `spec.md > Components > Upload endpoint and chunking`, `spec.md > File Structure`, `spec.md > Stack`, `spec.md > Data Model`
+  Build: Create `Document_RAG_API` (FastAPI, `chunking/chunking_pdf.py`, `rag/vectorstore.py`, `requirements.txt`, `.env.example`) and `Document_RAG_APP` (Vite React on port 4000, UploadScreen). `POST /upload-pdf` validates PDF/40 MB/has text, saves to `storage/uploads/`, chunks, stores in Chroma, writes `document.json`. Measure chunking time on a real PDF.
+  Verify (mechanical): Install dependencies; start both servers with no errors; upload a sample PDF through the API and confirm the chunk count in Chroma is above zero and `document.json` exists; upload a non-PDF, an oversized file and a text-less PDF and confirm each is rejected with nothing stored.
+  Learner check: Open `http://localhost:4000`, pick a PDF, watch the loader, and see the ready message; then try a non-PDF file and see "this document is invalid."
+  Commit: `Add PDF upload, semantic chunking and Chroma storage`
+
+- [ ] **2. You can ask a question and get a grounded answer, or "not found in this document"**
+  Becomes usable: A basic chat box under the upload that answers from the document using top-5 retrieval and Gemini.
+  Why now: This is the unique kernel (answers only from the document). It comes right after upload so the whole idea is provable before any extra screens.
+  PRD ref: `prd.md > Features and Behavior > Chat`
+  Spec ref: `spec.md > Components > Retrieval and chat`, `spec.md > External Services and Dependencies`, `spec.md > Important Failure Modes`
+  Build: Add `rag/chat.py` (k=5 retrieval, strict grounding prompt, last-6-messages memory, Gemini call, exact "not found in this document."), `POST /chat`, and a minimal chat in the site. Add `tests/` with questions the sample PDF does and does not cover, plus a follow-up question. Verify the Gemini model name first.
+  Verify (mechanical): Run the test questions: covered ones return answers containing known facts; uncovered ones return exactly "not found in this document."; record how the follow-up question behaves; with the key missing the API returns a clean error.
+  Learner check: Ask a question you know the PDF answers, then one it does not cover, and say whether the answers are right and whether the "not found" holds.
+  Commit: `Add grounded chat with Gemini and retrieval tests`
+
+- [ ] **3. You get the full agent screen: header, PDF card, replace and delete**
+  Becomes usable: The agent screen layout with the logo header, the PDF icon card (hover delete with "are you sure?", upload a new PDF), the no-document state, and the chat in place.
+  Why now: Puts the kernel inside the product's real layout and covers the document lifecycle before conversations depend on it.
+  PRD ref: `prd.md > Screens and Layout`, `prd.md > Features and Behavior > Replacing and deleting the PDF`
+  Spec ref: `spec.md > Components > Document replace and delete`, `spec.md > Components > Frontend: Agent screen`
+  Build: Add `GET /document` and `DELETE /document`; replace-on-upload clears old Chroma data and file; add Header, DocumentCard, ConfirmDialog; route between upload and agent screens automatically.
+  Verify (mechanical): Upload A then B and confirm only B's chunks remain and answers come from B; delete the document and confirm Chroma, the file and `document.json` are gone and `/chat` refuses with "no document to search"; the site builds without errors.
+  Learner check: Upload a PDF, land on the agent screen, hover the PDF icon and delete it (confirming), see the no-document message, then upload another and ask a question.
+  Commit: `Add agent screen with document replace and delete`
+
+- [ ] **4. Conversations are saved, listed, continued, and deleted**
+  Becomes usable: A collapsible sidebar with New chat, past conversations (first question as title, timestamp), click to continue, per-conversation delete with confirmation, and read-only history for old documents.
+  Why now: It depends on the chat and the document lifecycle, and it is the last big behavior in the PRD.
+  PRD ref: `prd.md > Features and Behavior > Conversations (sidebar)`, `prd.md > States and Boundaries`
+  Spec ref: `spec.md > Components > Sessions`, `spec.md > Components > Frontend: Agent screen`, `spec.md > Data Model`
+  Build: Add `sessions.py` and the session routes (create, list, get, delete via `visibility`); save messages on each chat; add Sidebar; mark sessions read-only when `document_id` differs; disable input for read-only sessions.
+  Verify (mechanical): Via API: create a session, chat, list it with the correct title and timestamp, restart the server and confirm it persists, delete it and confirm it no longer lists but its file shows `visibility: false`; replace the document and confirm the old session reports `read_only`.
+  Learner check: Ask two questions, start a new chat, reopen the first from the sidebar and continue it, delete one (confirming), replace the PDF and see the old chat can no longer be continued.
+  Commit: `Add saved conversations with sidebar and read-only history`
+
+- [ ] **5. It looks like your design and handles the awkward cases**
+  Becomes usable: Blue-and-white minimal styling with your logo, the three-dots waiting indicators, clear error messages, and a README with start steps for the demo.
+  Why now: Styling and edge cases come last so they polish working behavior; the README makes the repo and recording easy.
+  PRD ref: `prd.md > Look and Feel`, `prd.md > States and Boundaries`
+  Spec ref: `spec.md > Look and Feel`, `spec.md > Important Failure Modes`, `spec.md > Where It Runs and How Someone Tries It`
+  Build: Apply the palette and plain font, add the logo, the waiting indicator in chat, a short error message when Gemini fails, the empty states, and a README with setup and run steps.
+  Verify (mechanical): Production build of the site succeeds; run the full journey end to end (upload, covered question, uncovered question, delete conversation, delete PDF); with a bad API key the chat shows an error message and nothing crashes.
+  Learner check: Run the full demo flow as you'd record it and say what feels off in the look, wording or flow.
+  Commit: `Apply design, error states and README`
+
+## Hands-on Checkpoints
+
+- [ ] Early usable behavior explored — after slice 2 (grounded chat working)
+- [ ] Final kick-the-tires exploration and feedback completed
+
+## Final Review
+
+- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+
+## Code Tour and App Map
+
+- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+
+Activity and evidence: 
+Route and stops: 
+Edit outcome: 
+Reflection: 
+Activity mode: 
+
+## Revisions

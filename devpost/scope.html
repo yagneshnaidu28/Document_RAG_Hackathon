@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document Q&A Agent: Scope</title>
+<style>
+  :root { --bg:#f7f8fb; --card:#fff; --ink:#1c2230; --muted:#5b6475; --accent:#3b5bdb; --ok:#2b8a3e; --warn:#e8590c; --cut:#868e96; --line:#dde1ea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12151c; --card:#1b2029; --ink:#e8ebf2; --muted:#9aa3b5; --accent:#7c93ff; --line:#2c3341; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,Segoe UI,sans-serif; }
+  main { max-width:820px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { margin:0 0 4px; font-size:1.8rem; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; background:var(--warn); color:#fff; font-size:.75rem; vertical-align:middle; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:16px 0; }
+  h2 { margin:0 0 8px; font-size:1.1rem; color:var(--accent); }
+  .kernel { border-left:4px solid var(--accent); }
+  details { border:1px solid var(--line); border-radius:8px; margin:8px 0; padding:8px 12px; }
+  summary { cursor:pointer; font-weight:600; }
+  .now summary { color:var(--ok); } .later summary { color:var(--warn); } .cut summary { color:var(--cut); }
+  svg { width:100%; height:auto; }
+  svg text { fill:var(--ink); font:13px system-ui,sans-serif; }
+  svg .box { fill:var(--card); stroke:var(--accent); stroke-width:1.5; }
+  svg .box2 { fill:var(--card); stroke:var(--ok); stroke-width:1.5; }
+  svg .arrow { stroke:var(--muted); stroke-width:1.5; fill:none; marker-end:url(#a); }
+  svg .lbl { fill:var(--muted); font-size:11px; }
+  .steps button { margin:4px 4px 4px 0; padding:6px 12px; border:1px solid var(--accent); background:transparent; color:var(--accent); border-radius:8px; cursor:pointer; }
+  .steps button.on { background:var(--accent); color:#fff; }
+  #stepText { margin-top:8px; min-height:3em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Document Q&amp;A Agent <span class="badge" style="background:var(--ok)">approved</span></h1>
+  <p class="sub">Upload a PDF, ask questions, get answers only from that document.</p>
+
+  <section class="kernel">
+    <h2>The Unique Kernel</h2>
+    <p><strong>Grounded answers only.</strong> The agent answers from its own knowledge base, the chunks of your uploaded PDF, so no assumptions or hallucinations. If the answer isn't in the document it says <em>"not found in this document."</em></p>
+  </section>
+
+  <section>
+    <h2>Who It's For</h2>
+    <p>A student (mostly), or anyone holding a document of hundreds of pages: a syllabus, subject notes, a bill, a constitution. They need two or three things from it. Today they read page by page.</p>
+  </section>
+
+  <section>
+    <h2>The Core Loop and the Proof</h2>
+    <svg viewBox="0 0 760 210" role="img" aria-label="Flow from user to upload, backend chunking, vector DB, question, retrieval, answer">
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#868e96"/></marker></defs>
+      <rect class="box" x="10" y="20" width="120" height="50" rx="8"/><text x="70" y="42" text-anchor="middle">Student</text><text x="70" y="58" text-anchor="middle" class="lbl">uploads PDF</text>
+      <rect class="box" x="170" y="20" width="130" height="50" rx="8"/><text x="235" y="42" text-anchor="middle">Backend</text><text x="235" y="58" text-anchor="middle" class="lbl">chunk the PDF</text>
+      <rect class="box" x="340" y="20" width="130" height="50" rx="8"/><text x="405" y="42" text-anchor="middle">Vector DB</text><text x="405" y="58" text-anchor="middle" class="lbl">store chunks</text>
+      <rect class="box" x="510" y="20" width="130" height="50" rx="8"/><text x="575" y="42" text-anchor="middle">Agent screen</text><text x="575" y="58" text-anchor="middle" class="lbl">success flag = true</text>
+      <path class="arrow" d="M130,45 H170"/><path class="arrow" d="M300,45 H340"/><path class="arrow" d="M470,45 H510"/>
+      <rect class="box2" x="10" y="130" width="130" height="50" rx="8"/><text x="75" y="152" text-anchor="middle">Question</text><text x="75" y="168" text-anchor="middle" class="lbl">asked in chat</text>
+      <rect class="box2" x="200" y="130" width="150" height="50" rx="8"/><text x="275" y="152" text-anchor="middle">Top-k search</text><text x="275" y="168" text-anchor="middle" class="lbl">similar chunks</text>
+      <rect class="box2" x="410" y="130" width="160" height="50" rx="8"/><text x="490" y="152" text-anchor="middle">Grounded answer</text><text x="490" y="168" text-anchor="middle" class="lbl">or "not found in this document"</text>
+      <path class="arrow" d="M575,70 V100 H75 V130"/><path class="arrow" d="M140,155 H200"/><path class="arrow" d="M350,155 H410"/>
+    </svg>
+    <p><strong>The "oh, that's cool" beat:</strong> ask something the document doesn't cover and get "not found in this document" instead of a guess.</p>
+  </section>
+
+  <section class="steps">
+    <h2>The one-minute demo, step by step</h2>
+    <div id="btns"></div>
+    <p id="stepText"></p>
+  </section>
+
+  <section>
+    <h2>The POC Boundary</h2>
+    <details class="now" open><summary>Now (all in the proof of concept)</summary>
+      <ul>
+        <li>PDF upload UI (PDF only, max 40 MB), saved to a folder, path sent to backend</li>
+        <li>Upload endpoint, then chunking, then vector DB storage, then success flag</li>
+        <li>Agent screen: chat, past conversations list, uploaded PDF with delete button</li>
+        <li>Top-k similarity retrieval and a connected, grounded answer; "not found" fallback</li>
+        <li>Sessions saved to files with a visibility flag; delete hides a conversation</li>
+      </ul></details>
+    <details class="later"><summary>Later</summary>
+      <ul><li>Paste text instead of uploading a PDF</li><li>Citations / page numbers</li><li>Automatic document overview</li></ul></details>
+    <details class="cut"><summary>Explicitly cut</summary>
+      <p>Nothing cut yet. This is a lot for 2–4 hours, so the build may need to simplify within the "Now" items.</p></details>
+  </section>
+
+  <section>
+    <h2>Open Items</h2>
+    <ul><li>Session file format: <code>.json</code> or <code>.md</code>?</li><li>Delete value described as both "false" and "off"; settle in the PRD.</li></ul>
+  </section>
+</main>
+<script>
+  var steps = [
+    ["1. Open", "Open the frontend on localhost (port 4000). The first screen is an upload box for PDFs only."],
+    ["2. Upload", "Pick a PDF up to 40 MB. It is saved to a folder and its file path is sent to the backend."],
+    ["3. Process", "The backend chunks the PDF and saves the chunks to the vector DB, then returns true."],
+    ["4. Agent screen", "The frontend redirects to the agent screen: past conversations, the uploaded PDF (deletable), and the chat."],
+    ["5. Ask", "Ask a question. Top-k similar chunks are retrieved and turned into a connected plain-text answer, or 'not found in this document.'"],
+    ["6. Save and delete", "The conversation is saved to the sessions folder with visibility true. Delete sets it hidden and the UI stops showing it."]
+  ];
+  var b = document.getElementById("btns"), t = document.getElementById("stepText");
+  function show(i) {
+    t.textContent = steps[i][1];
+    Array.prototype.forEach.call(b.children, function (c, j) { c.className = j === i ? "on" : ""; });
+  }
+  steps.forEach(function (s, i) {
+    var x = document.createElement("button"); x.textContent = s[0]; x.onclick = function () { show(i); }; b.appendChild(x);
+  });
+  show(0);
+</script>
+</body>
+</html>

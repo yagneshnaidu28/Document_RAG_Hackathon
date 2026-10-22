@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document Agents: PRD</title>
+<style>
+  :root { --bg:#f5f8ff; --card:#fff; --ink:#111; --muted:#55627a; --accent:#1c64f2; --ok:#2b8a3e; --warn:#e8590c; --line:#d9e2f3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --card:#171e2e; --ink:#eef2fb; --muted:#9aa8c4; --accent:#6fa0ff; --line:#2a3550; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,Segoe UI,sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { margin:0 0 4px; font-size:1.8rem; } .sub { color:var(--muted); margin:0 0 16px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; background:var(--warn); color:#fff; font-size:.75rem; vertical-align:middle; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:16px 0; }
+  h2 { margin:0 0 8px; font-size:1.1rem; color:var(--accent); }
+  .tabs button, .flow button { margin:4px 4px 4px 0; padding:6px 12px; border:1px solid var(--accent); background:transparent; color:var(--accent); border-radius:8px; cursor:pointer; }
+  .tabs button.on, .flow button.on { background:var(--accent); color:#fff; }
+  details { border:1px solid var(--line); border-radius:8px; margin:8px 0; padding:8px 12px; }
+  summary { cursor:pointer; font-weight:600; }
+  svg { width:100%; height:auto; } svg text { fill:var(--ink); font:13px system-ui,sans-serif; }
+  svg .b { fill:var(--card); stroke:var(--accent); stroke-width:1.5; } svg .e { fill:var(--card); stroke:var(--warn); stroke-width:1.5; }
+  svg .arrow { stroke:var(--muted); stroke-width:1.5; fill:none; marker-end:url(#a); } svg .l { fill:var(--muted); font-size:11px; }
+  .mock { display:grid; grid-template-columns:150px 1fr; grid-template-rows:36px 1fr; border:2px solid var(--accent); border-radius:10px; overflow:hidden; min-height:260px; }
+  .mock div { padding:8px; font-size:.85rem; }
+  .hd { grid-column:1 / 3; background:var(--accent); color:#fff; display:flex; justify-content:space-between; align-items:center; }
+  .sb { border-right:1px solid var(--line); background:var(--bg); } .sb b { display:block; margin-bottom:6px; color:var(--accent); }
+  .mn { display:flex; flex-direction:column; gap:8px; }
+  .pdf { border:1px dashed var(--accent); border-radius:8px; padding:6px; width:fit-content; }
+  .chat { flex:1; border:1px solid var(--line); border-radius:8px; padding:6px; color:var(--muted); }
+  .inp { border:1px solid var(--accent); border-radius:8px; padding:6px; }
+  ul { padding-left:20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Document Agents <span class="badge" id="badge" style="background:var(--ok)">approved</span></h1>
+  <p class="sub">Product requirements. Scope said "upload a PDF and ask questions." Now we know exactly what that means.</p>
+
+  <section>
+    <h2>Core journey</h2>
+    <svg viewBox="0 0 800 190" role="img" aria-label="Journey: open, upload, loading, agent screen, ask, answer or not found; invalid file branch">
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8896b3"/></marker></defs>
+      <rect class="b" x="10" y="15" width="110" height="46" rx="8"/><text x="65" y="43" text-anchor="middle">Open app</text>
+      <rect class="b" x="160" y="15" width="130" height="46" rx="8"/><text x="225" y="43" text-anchor="middle">Pick PDF</text>
+      <rect class="b" x="330" y="15" width="130" height="46" rx="8"/><text x="395" y="43" text-anchor="middle">Loading dots</text>
+      <rect class="b" x="500" y="15" width="140" height="46" rx="8"/><text x="570" y="43" text-anchor="middle">Agent screen</text>
+      <rect class="e" x="330" y="105" width="130" height="46" rx="8"/><text x="395" y="125" text-anchor="middle">"this document</text><text x="395" y="141" text-anchor="middle">is invalid"</text>
+      <rect class="b" x="670" y="15" width="120" height="46" rx="8"/><text x="730" y="43" text-anchor="middle">Ask question</text>
+      <rect class="b" x="640" y="105" width="150" height="46" rx="8"/><text x="715" y="125" text-anchor="middle">Answer, or "not</text><text x="715" y="141" text-anchor="middle">found in this document"</text>
+      <path class="arrow" d="M120,38 H160"/><path class="arrow" d="M290,38 H330"/><path class="arrow" d="M460,38 H500"/><path class="arrow" d="M640,38 H670"/>
+      <path class="arrow" d="M395,61 V105"/><text class="l" x="402" y="88">unusable file</text><path class="arrow" d="M730,61 V105"/>
+    </svg>
+  </section>
+
+  <section>
+    <h2>Agent screen layout</h2>
+    <div class="mock">
+      <div class="hd"><span>[Bot logo]</span><span>Document Agents</span><span></span></div>
+      <div class="sb"><b>+ New chat</b>First question… 10:42 🗑<br>Another question… yesterday 🗑</div>
+      <div class="mn"><div class="pdf">📄 uploaded.pdf <small>(hover: delete)</small></div><div class="chat">Conversation</div><div class="inp">Ask a question… ➤</div></div>
+    </div>
+    <p>The sidebar opens and closes. Blue and white, black text, minimal.</p>
+  </section>
+
+  <section class="tabs">
+    <h2>Behavior and checks</h2>
+    <div id="tabs"></div>
+    <div id="tab"></div>
+  </section>
+
+  <section>
+    <h2>States</h2>
+    <details open><summary>Normal</summary><ul><li>No document: upload screen; agent screen says no document to search.</li><li>Processing: three moving dots.</li><li>Invalid file: "this document is invalid."</li><li>Conversations saved; deleted ones hidden.</li></ul></details>
+    <details><summary>Assumptions to confirm</summary><ul><li>Waiting for an answer: a three-dots indicator in the chat.</li><li>Answer failure: a short error message in the chat.</li></ul></details>
+  </section>
+
+  <section>
+    <h2>Building, deferred, non-goals</h2>
+    <details open><summary>Building</summary><p>Upload, loading and invalid states, agent screen, replace/delete PDF, grounded Q&amp;A, saved conversations with delete and read-only history.</p></details>
+    <details><summary>Deferred</summary><p>Paste text, citations, automatic overview.</p></details>
+    <details><summary>Non-goals</summary><p>No general-knowledge guessing; no accounts or sharing.</p></details>
+    <details><summary>Open questions</summary><p>Session file format and visibility value (for the spec); confirm the two assumptions; logo file.</p></details>
+  </section>
+</main>
+<script>
+  var data = {
+    "Upload": ["PDF only, max 40 MB. Three moving dots while processing.", "A valid PDF opens the agent screen.", "Non-PDF, oversized or unreadable shows 'this document is invalid' and stores nothing."],
+    "Replace / delete PDF": ["Uploading a new PDF replaces the old chunks and switches to the new document.", "Delete asks 'are you sure?' first.", "After deleting, the chat says there is no document to search and a new upload is offered."],
+    "Chat": ["Answers come only from the document, as plain text.", "A covered question gets a connected answer.", "An uncovered question gets 'not found in this document.'"],
+    "Conversations": ["Title is the first question, plus a timestamp.", "New chat button; click a past chat to open and continue it.", "Delete per conversation, with confirmation; it disappears from the list.", "Chats of a deleted or replaced document are read-only.", "Sidebar opens and closes."]
+  };
+  var tabs = document.getElementById("tabs"), tab = document.getElementById("tab");
+  function show(k) {
+    Array.prototype.forEach.call(tabs.children, function (c) { c.className = c.textContent === k ? "on" : ""; });
+    tab.innerHTML = "<ul>" + data[k].map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
+  }
+  Object.keys(data).forEach(function (k) {
+    var b = document.createElement("button"); b.textContent = k; b.onclick = function () { show(k); }; tabs.appendChild(b);
+  });
+  show("Upload");
+</script>
+</body>
+</html>
