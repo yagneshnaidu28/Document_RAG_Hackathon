@@ -43,7 +43,7 @@
       <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8896b3"/></marker></defs>
       <rect id="n-fe" class="fe" x="10" y="110" width="140" height="70" rx="8"/><text x="80" y="140" text-anchor="middle">React site</text><text x="80" y="158" text-anchor="middle" class="l">localhost:4000</text>
       <rect id="n-api" class="be" x="230" y="110" width="150" height="70" rx="8"/><text x="305" y="140" text-anchor="middle">FastAPI</text><text x="305" y="158" text-anchor="middle" class="l">localhost:8000</text>
-      <rect id="n-chunk" class="be" x="470" y="10" width="170" height="60" rx="8"/><text x="555" y="36" text-anchor="middle">chunking_pdf</text><text x="555" y="54" text-anchor="middle" class="l">PyPDFLoader + SemanticChunker</text>
+      <rect id="n-chunk" class="be" x="470" y="10" width="170" height="60" rx="8"/><text x="555" y="36" text-anchor="middle">chunking_pdf</text><text x="555" y="54" text-anchor="middle" class="l">PyPDFLoader + Recursive splitter</text>
       <rect id="n-emb" class="be" x="680" y="10" width="130" height="60" rx="8"/><text x="745" y="36" text-anchor="middle">Embeddings</text><text x="745" y="54" text-anchor="middle" class="l">sentence-transformers</text>
       <rect id="n-db" class="be" x="580" y="110" width="140" height="60" rx="8"/><text x="650" y="136" text-anchor="middle">Chroma</text><text x="650" y="154" text-anchor="middle" class="l">top-5 search</text>
       <rect id="n-sess" class="be" x="470" y="215" width="170" height="60" rx="8"/><text x="555" y="241" text-anchor="middle">storage/sessions</text><text x="555" y="259" text-anchor="middle" class="l">session_*.json</text>
@@ -65,7 +65,7 @@
       <tr><th>Piece</th><th>Choice</th><th>Why / tradeoff</th></tr>
       <tr><td>Backend</td><td>FastAPI</td><td>Learner: lightweight, reliable</td></tr>
       <tr><td>PDF</td><td>PyPDFLoader</td><td>Learner: used before, reliable</td></tr>
-      <tr><td>Chunking</td><td>SemanticChunker</td><td>Slower upload; loader covers the wait</td></tr>
+      <tr><td>Chunking</td><td>RecursiveCharacterTextSplitter</td><td>Switched from semantic: 402 pages in ~1 min instead of 4+; chunks follow size/paragraphs</td></tr>
       <tr><td>Embeddings</td><td>sentence-transformers (local)</td><td>Free, no key; ~90 MB first download</td></tr>
       <tr><td>Vector store</td><td>Chroma</td><td>Local; easy clear on replace/delete</td></tr>
       <tr><td>Retriever</td><td>Top-k similarity, k=5</td><td>Always returns 5, so the prompt guards "not found"</td></tr>
@@ -104,7 +104,7 @@
       <li>Gemini fails → short error in the chat.</li>
       <li>Off-topic question answered anyway → strict prompt + build-time tests; add a score threshold if it leaks.</li>
       <li>Follow-ups without a rewrite step → tested in the build.</li>
-      <li>Slow semantic chunking → loader; timing measured.</li></ul></details>
+      <li>Slow upload on huge PDFs → loader; 402 pages measured at ~62 s.</li></ul></details>
     <details><summary>To verify early in the build</summary><p>Current Gemini model name and limits; package versions install together; chunker speed; logo file; final grounding prompt.</p></details>
     <details><summary>How to run it</summary><p>Backend: venv, <code>pip install -r requirements.txt</code>, <code>.env</code> with <code>GOOGLE_API_KEY</code>, <code>uvicorn main:app --port 8000</code>. Frontend: <code>npm install</code>, <code>npm run dev</code>. Open <code>http://localhost:4000</code>.</p></details>
   </section>
@@ -113,7 +113,7 @@
   var steps = [
     ["1 Open", "Site asks GET /document. No document, so the upload screen shows.", "n-fe"],
     ["2 Upload", "Site checks PDF and 40 MB, shows the loader, sends POST /upload-pdf.", "n-api"],
-    ["3 Chunk", "API saves the file and calls chunk_pdf(path): pages, drop empty ones, semantic split.", "n-chunk"],
+    ["3 Chunk", "API saves the file and calls chunk_pdf(path): pages, drop empty ones, recursive split.", "n-chunk"],
     ["4 Store", "Chunks are embedded and stored in Chroma (old data cleared). API returns ok.", "n-db"],
     ["5 Agent screen", "Site opens the agent screen and loads sessions.", "n-fe"],
     ["6 Ask", "POST /chat: retrieve top 5, strict prompt with the last 6 messages, call Gemini.", "n-llm"],

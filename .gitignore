@@ -9,3 +9,5 @@ __pycache__/
 venv/
 node_modules/
 dist/
+scratch/
+pip_install.log

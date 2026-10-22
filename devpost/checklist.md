@@ -5,19 +5,19 @@ status: approved
 
 # Build Checklist
 
-Build mode: not chosen yet
+Build mode: learn
 
 ## Slices
 
-- [ ] **1. You can upload a PDF and it gets chunked and stored**
+- [x] **1. You can upload a PDF and it gets chunked and stored**
   Becomes usable: A running site (port 4000) and API (port 8000). Picking a PDF shows the three-dots loader, then a "ready" message. A bad file shows "this document is invalid." Chunks are saved in Chroma.
-  Why now: This is the riskiest unfamiliar part (PyPDFLoader, semantic chunking, local embeddings, Chroma, FastAPI-to-React wiring). Finding problems here is cheap, and it includes all project bootstrapping.
+  Why now: This is the riskiest unfamiliar part (PyPDFLoader, chunking, local embeddings, Chroma, FastAPI-to-React wiring). Finding problems here is cheap, and it includes all project bootstrapping.
   PRD ref: `prd.md > Features and Behavior > Upload`, `prd.md > The Core Journey` (steps 1-3)
   Spec ref: `spec.md > Components > Upload endpoint and chunking`, `spec.md > File Structure`, `spec.md > Stack`, `spec.md > Data Model`
   Build: Create `Document_RAG_API` (FastAPI, `chunking/chunking_pdf.py`, `rag/vectorstore.py`, `requirements.txt`, `.env.example`) and `Document_RAG_APP` (Vite React on port 4000, UploadScreen). `POST /upload-pdf` validates PDF/40 MB/has text, saves to `storage/uploads/`, chunks, stores in Chroma, writes `document.json`. Measure chunking time on a real PDF.
   Verify (mechanical): Install dependencies; start both servers with no errors; upload a sample PDF through the API and confirm the chunk count in Chroma is above zero and `document.json` exists; upload a non-PDF, an oversized file and a text-less PDF and confirm each is rejected with nothing stored.
   Learner check: Open `http://localhost:4000`, pick a PDF, watch the loader, and see the ready message; then try a non-PDF file and see "this document is invalid."
-  Commit: `Add PDF upload, semantic chunking and Chroma storage`
+  Commit: `Add PDF upload, chunking and Chroma storage`
 
 - [ ] **2. You can ask a question and get a grounded answer, or "not found in this document"**
   Becomes usable: A basic chat box under the upload that answers from the document using top-5 retrieval and Gemini.
@@ -81,3 +81,5 @@ Reflection:
 Activity mode: 
 
 ## Revisions
+- Chunking changed from SemanticChunker to RecursiveCharacterTextSplitter — semantic chunking took over 4 minutes on a 402-page PDF (it embeds every sentence on the CPU); the learner chose to switch, and the same file now uploads in about 62 seconds.
+- The upload screen now shows "cannot reach the server" for a network failure instead of "this document is invalid" — a stopped API was mistaken for an invalid document during testing.
