@@ -7,7 +7,7 @@ Built for the Devpost "Build With AI: Basics" hackathon as a proof of concept.
 ## What it does
 
 - Upload one PDF (PDF only, up to 40 MB). It is read, split into chunks, and stored in a local vector database (Chroma).
-- Ask questions in a chat. The app finds the most relevant chunks (embedding similarity plus keyword search, merged) and Gemini writes a connected answer from them only.
+- Ask questions in a chat. The app finds the 7 most similar chunks (plain similarity search) and Gemini writes a connected answer from them only.
 - Summary-style questions ("give me a summary", "what is this about") use chunks sampled across the whole document.
 - Conversations are saved as JSON files, listed in a sidebar (first question + time), and can be continued or deleted.
 - Replacing or deleting the PDF makes older conversations read-only, because they belong to a different document.
@@ -18,7 +18,7 @@ Built for the Devpost "Build With AI: Basics" hackathon as a proof of concept.
 React site (port 4000)  -->  FastAPI (port 8000)
                                 |-- chunking/chunking_pdf.py   PyPDFLoader (pypdf) + RecursiveCharacterTextSplitter
                                 |-- rag/vectorstore.py         local sentence-transformers embeddings + Chroma
-                                |-- rag/chat.py                hybrid retrieval + strict grounding prompt + Gemini
+                                |-- rag/chat.py                top-7 similarity retrieval + strict grounding prompt + Gemini
                                 |-- sessions.py                saved conversations (storage/sessions/*.json)
 ```
 
@@ -60,6 +60,7 @@ Open http://localhost:4000.
 ## Notes
 
 - **Gemini free tier** allows roughly 20 requests per day per model. The chat tries several Gemini models in order (set your own list with `GEMINI_MODELS` in `.env`). If every model is rate-limited you will see a short error message instead of an answer.
+- **Searching by meaning:** the search matches meaning, not exact numbers, so a question like "explain article 14" can come back "not found" even when the text is there; asking about the idea ("what does the constitution say about equality before the law?") works better.
 - **Scanned PDFs** (images of pages with no text) are not supported; they are reported as "this document is invalid".
 - Your key lives only in `Document_RAG_API/.env`, which is git-ignored. Uploaded PDFs, the vector store and conversations live in `Document_RAG_API/storage/` (also git-ignored).
 - Retrieval check used during the build: `Document_RAG_API/tests/test_grounding.py` (run `python tests/make_sample_pdf.py sample.pdf`, upload it, then `python tests/test_grounding.py`).
