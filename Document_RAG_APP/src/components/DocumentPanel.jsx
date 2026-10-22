@@ -3,13 +3,7 @@ import usePdfUpload from '../hooks/usePdfUpload.js'
 import Dropzone from './Dropzone.jsx'
 import ConfirmDialog from './ConfirmDialog.jsx'
 import { deleteDocument } from '../api.js'
-
-function formatTime(iso) {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const p = (n) => String(n).padStart(2, '0')
-  return `${p(d.getDate())}-${p(d.getMonth() + 1)}-${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
-}
+import { formatTime } from '../format.js'
 
 export default function DocumentPanel({ document, onChanged }) {
   const { busy, error, handleFile } = usePdfUpload(onChanged)

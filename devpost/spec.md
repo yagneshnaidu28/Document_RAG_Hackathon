@@ -62,7 +62,7 @@ PRD ref: `prd.md > Features and Behavior > Replacing and deleting the PDF`.
 PRD ref: `prd.md > Features and Behavior > Chat`.
 
 ### Sessions
-`POST /sessions` (new), `GET /sessions` (visible ones, newest first, with title and timestamp, and a `read_only` flag), `GET /sessions/{id}`, `DELETE /sessions/{id}` (sets `visibility` false). A session is read-only when its `document_id` differs from the current document's.
+`sessions.py` keeps one file per conversation, `storage/sessions/session_<time>_<date>.json` (for example `session_15-43-14_22-10-2026.json`), holding `id`, `document_id`, `created_at`, `visibility` (starts true) and `messages`. Routes: `GET /sessions` (visible conversations with messages, newest first, each with title = first question, timestamp, and a `read_only` flag), `GET /sessions/{id}`, `DELETE /sessions/{id}` (sets `visibility` false; the file stays). `POST /chat` takes `{question, session_id?}`: no `session_id` starts a new conversation; the question is saved before the answer is generated, so it survives a failed answer; the answer is saved after. A conversation is read-only when its `document_id` differs from the current document's, and `POST /chat` refuses it with 409. Session ids are validated so only `session_*` files can be reached.
 PRD ref: `prd.md > Features and Behavior > Conversations (sidebar)`.
 
 ### Frontend: Upload screen

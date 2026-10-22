@@ -39,7 +39,7 @@ Build mode: learn
   Learner check: Upload a PDF, land on the agent screen, hover the PDF icon and delete it (confirming), see the no-document message, then upload another and ask a question.
   Commit: `Add agent screen with document replace and delete`
 
-- [ ] **4. Conversations are saved, listed, continued, and deleted**
+- [x] **4. Conversations are saved, listed, continued, and deleted**
   Becomes usable: A collapsible sidebar with New chat, past conversations (first question as title, timestamp), click to continue, per-conversation delete with confirmation, and read-only history for old documents.
   Why now: It depends on the chat and the document lifecycle, and it is the last big behavior in the PRD.
   PRD ref: `prd.md > Features and Behavior > Conversations (sidebar)`, `prd.md > States and Boundaries`
@@ -90,3 +90,4 @@ Activity mode:
 - Upload speed tuned at the learner's request: a 402-page PDF went from 62 s to about 35-42 s and no longer waits for the model to load on the first upload. Model preloaded at server start; pypdf page reading parallelised for PDFs of 40+ pages; torch uses all cores; upload work moved off the server's main loop. ONNX and bfloat16 gave no gain, so embedding speed is the remaining floor.
 - Chat fixed after the learner reported "not found" for "give me summary of document" and slow answers: summary/overview questions now use chunks sampled evenly across the whole document (top-5 similarity returned unrelated chunks for them); the fast `gemini-3.5-flash-lite` is tried first with a 30 s timeout and no retries (answers about 2 s instead of 15-25 s; the slower thinking models are fallbacks). Normal questions still use plain top-5 similarity as the learner chose.
 - Retrieval changed from plain top-5 similarity to a hybrid (embedding + BM25 keyword, merged, best 8, plus the following chunk when a match is cut mid-sentence) — on the learner's 402-page Constitution PDF, embeddings alone could not find article numbers ("what was article 373 about" returned chunks about articles 306, 342, 370, 371D). Verified: Articles 14, 17, 21, 24, 373 answered correctly, off-topic questions still return "not found in this document", and the keyword index resets when the document changes. Learner informed.
+- Slice 4: `POST /chat` now takes `session_id` and loads the last 6 messages from the saved session (replacing the temporary `history` sent by the page in slice 2); a failed answer still keeps the saved question and returns the session id so the page stays attached to its conversation.
