@@ -32,7 +32,7 @@ PRD ref: `prd.md > The Core Journey`.
 - **Embeddings:** **sentence-transformers** local model (`all-MiniLM-L6-v2`), via `langchain_huggingface`. Accepted recommendation: free, offline, no key. https://www.sbert.net/
 - **Vector store:** **Chroma** via `langchain_chroma`, saved to a local folder. Learner choice. https://docs.trychroma.com/
 - **Retriever:** plain top-k similarity, **k = 5**. Learner choice. Tradeoff: always returns 5 chunks, even for off-topic questions, so "not found" relies on the prompt.
-- **LLM:** **Gemini** via `langchain_google_genai`, API key in a local `.env` (learner creates it). Model name to verify early (planned `gemini-2.5-flash`; unverified, check Google's current model list). https://ai.google.dev/gemini-api/docs
+- **LLM:** **Gemini** via `langchain_google_genai`, API key in a local `.env` (learner creates it). Verified in the build: `gemini-2.5-flash` is listed but returns 404 "no longer available to new users" for this key. The chat tries `gemini-3.8-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3-flash-preview` in order and moves on when one is rate-limited or retired (override with `GEMINI_MODELS` in `.env`). https://ai.google.dev/gemini-api/docs
 - **Frontend:** **React** with Vite, dev server on port 4000. https://react.dev/ and https://vite.dev/
 - Exact library versions are unverified; pin them during build step 1 and check they install together.
 
@@ -108,13 +108,13 @@ Document_rag/
 ```
 
 ## External Services and Dependencies
-- **Gemini API** — called by `langchain_google_genai` `ChatGoogleGenerativeAI`; auth is the `GOOGLE_API_KEY` from `.env`; free-tier rate limits apply (unverified, check). Docs: https://ai.google.dev/gemini-api/docs
+- **Gemini API** — called by `langchain_google_genai` `ChatGoogleGenerativeAI`; auth is the `GOOGLE_API_KEY` from `.env`; free tier measured at 20 requests per day per model (a 429 reports it), so the model fallback list matters for the demo. Docs: https://ai.google.dev/gemini-api/docs
 - **Hugging Face model download** (one time, for the embedding model). Docs: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
 - Everything else is local.
 
 ## Important Failure Modes
 - **Unusable PDF** (not a PDF, over 40 MB, no text, or chunking fails) → "this document is invalid"; nothing stored.
-- **Gemini fails** (no key, rate limit, offline) → a short error message in the chat; the user's question stays saved.
+- **Gemini fails** (no key, rate limit, offline) → a short error message in the chat; the user's question stays saved. Every model in the list must fail before this shows.
 - **Off-topic question retrieves 5 weak chunks and the model answers anyway** → mitigated by the strict prompt and tested during the build with questions the document does and does not cover. If it leaks, add a score threshold.
 - **Follow-up questions without a rewrite step** → may retrieve poor chunks. Tested during the build.
 - **Slow upload on a very large PDF** → the loader covers the wait; measured: 402 pages in about 62 seconds (page loading and embedding dominate).

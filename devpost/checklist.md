@@ -19,7 +19,7 @@ Build mode: learn
   Learner check: Open `http://localhost:4000`, pick a PDF, watch the loader, and see the ready message; then try a non-PDF file and see "this document is invalid."
   Commit: `Add PDF upload, chunking and Chroma storage`
 
-- [ ] **2. You can ask a question and get a grounded answer, or "not found in this document"**
+- [x] **2. You can ask a question and get a grounded answer, or "not found in this document"**
   Becomes usable: A basic chat box under the upload that answers from the document using top-5 retrieval and Gemini.
   Why now: This is the unique kernel (answers only from the document). It comes right after upload so the whole idea is provable before any extra screens.
   PRD ref: `prd.md > Features and Behavior > Chat`
@@ -83,3 +83,6 @@ Activity mode:
 ## Revisions
 - Chunking changed from SemanticChunker to RecursiveCharacterTextSplitter — semantic chunking took over 4 minutes on a 402-page PDF (it embeds every sentence on the CPU); the learner chose to switch, and the same file now uploads in about 62 seconds.
 - The upload screen now shows "cannot reach the server" for a network failure instead of "this document is invalid" — a stopped API was mistaken for an invalid document during testing.
+- Gemini model: `gemini-2.5-flash` returns 404 for this key, and the free tier allows 20 requests per day per model — the chat now falls back across several Gemini models in order (still Gemini, learner's choice unchanged).
+- Until slice 4 adds saved sessions, `POST /chat` takes the last messages from the request (`history`) instead of a session id — the site keeps the conversation in memory for now.
+- Build-time retrieval test: 5/5 covered questions answered correctly and 5/5 uncovered returned exactly "not found in this document". Follow-up check: "Which one is biggest?" works, but "Explain that more simply" returns "not found in this document" because the question is searched as typed (the tradeoff the learner accepted); revisit adding a rewrite step if it matters.

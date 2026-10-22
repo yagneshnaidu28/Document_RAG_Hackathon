@@ -46,3 +46,17 @@ h1 { margin: 0; color: var(--blue); font-weight: 600; }
   0%, 80%, 100% { opacity: .25; transform: translateX(-4px); }
   40% { opacity: 1; transform: translateX(4px); }
 }
+
+.agent { max-width: 760px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; padding: 12px 16px; }
+.chat { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 8px 0; }
+.bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; line-height: 1.45; white-space: pre-wrap; }
+.bubble.user { align-self: flex-end; background: var(--blue); color: #fff; }
+.bubble.assistant { align-self: flex-start; background: var(--blue-light); }
+.error-bubble { background: #fff0f0; color: #c92a2a; }
+.input-bar { display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.input-bar input { flex: 1; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 1rem; }
+.input-bar input:focus { outline: 2px solid var(--blue); }
+.send { background: var(--blue); color: #fff; border: 0; border-radius: 10px; width: 46px; font-size: 1.1rem; cursor: pointer; }
+.send:disabled { opacity: .4; cursor: default; }
+.dots.small { height: 16px; }

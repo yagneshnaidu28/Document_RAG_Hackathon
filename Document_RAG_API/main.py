@@ -6,10 +6,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from chunking.chunking_pdf import NoReadableText, chunk_pdf  # noqa: E402
+from rag.chat import answer  # noqa: E402
 from rag.vectorstore import STORAGE, add_chunks  # noqa: E402
 
 MAX_BYTES = 40 * 1024 * 1024
@@ -65,3 +67,21 @@ async def upload_pdf(file: UploadFile):
         encoding="utf-8",
     )
     return {"ok": True, "chunks": count}
+
+
+class ChatRequest(BaseModel):
+    question: str
+    history: list[dict] = []
+
+
+@app.post("/chat")
+def chat(req: ChatRequest):
+    if not DOCUMENT_FILE.exists():
+        raise HTTPException(status_code=409, detail="no document to search")
+    question = req.question.strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="empty question")
+    try:
+        return {"answer": answer(question, req.history)}
+    except Exception:
+        raise HTTPException(status_code=502, detail="the answer could not be generated, please try again")
