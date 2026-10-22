@@ -17,7 +17,13 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 import sessions  # noqa: E402
 from chunking.chunking_pdf import NoReadableText, chunk_pdf  # noqa: E402
 from rag.chat import answer  # noqa: E402
-from rag.vectorstore import STORAGE, add_chunks, clear_store, get_embeddings  # noqa: E402
+from rag.vectorstore import (  # noqa: E402
+    EMBEDDING_MODEL,
+    STORAGE,
+    add_chunks,
+    clear_store,
+    get_embeddings,
+)
 
 MAX_BYTES = 40 * 1024 * 1024
 UPLOADS = STORAGE / "uploads"
@@ -73,6 +79,7 @@ async def upload_pdf(file: UploadFile):
                 "document_id": pdf_path.stem,
                 "filename": name,
                 "chunks": count,
+                "embedding_model": EMBEDDING_MODEL,
                 "uploaded_at": datetime.now(timezone.utc).isoformat(),
             }
         ),
@@ -94,6 +101,11 @@ def chat(req: ChatRequest):
     question = req.question.strip()
     if not question:
         raise HTTPException(status_code=400, detail="empty question")
+    if doc.get("embedding_model") != EMBEDDING_MODEL:
+        raise HTTPException(
+            status_code=409,
+            detail="this document was processed with an older search model, please upload it again",
+        )
 
     if req.session_id:
         try:

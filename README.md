@@ -16,8 +16,8 @@ Built for the Devpost "Build With AI: Basics" hackathon as a proof of concept.
 
 ```
 React site (port 4000)  -->  FastAPI (port 8000)
-                                |-- chunking/chunking_pdf.py   PyPDFLoader (pypdf) + RecursiveCharacterTextSplitter
-                                |-- rag/vectorstore.py         local sentence-transformers embeddings + Chroma
+                                |-- chunking/chunking_pdf.py   pypdf + heading-aware RecursiveCharacterTextSplitter
+                                |-- rag/vectorstore.py         local bge-small embeddings + Chroma
                                 |-- rag/chat.py                top-7 similarity retrieval + strict grounding prompt + Gemini
                                 |-- sessions.py                saved conversations (storage/sessions/*.json)
 ```
@@ -37,7 +37,7 @@ copy .env.example .env      # then open .env and paste your key after GOOGLE_API
 uvicorn main:app --port 8000
 ```
 
-The first start downloads the small embedding model (about 90 MB) and loads it, which takes a few seconds. The API is ready when it prints "Application startup complete".
+The first start downloads the embedding model (about 130 MB) and loads it, which takes a few seconds. The API is ready when it prints "Application startup complete".
 
 ### 2. Frontend (port 4000)
 
@@ -51,7 +51,7 @@ Open http://localhost:4000.
 
 ## Try it (demo flow)
 
-1. Upload a PDF (a syllabus or notes file works well). A 20-50 page PDF takes a few seconds; a 400-page book takes about 35-40 seconds.
+1. Upload a PDF (a syllabus or notes file works well). A 20-50 page PDF takes about 10 seconds; a 400-page book takes about 90 seconds.
 2. Ask a question the PDF answers. You get an answer drawn from the document.
 3. Ask something it doesn't cover ("who won the 2018 World Cup?"). You get **not found in this document**.
 4. Click **New chat**, ask another question, then reopen the first conversation from the sidebar and continue it.
@@ -60,7 +60,7 @@ Open http://localhost:4000.
 ## Notes
 
 - **Gemini free tier** allows roughly 20 requests per day per model. The chat tries several Gemini models in order (set your own list with `GEMINI_MODELS` in `.env`). If every model is rate-limited you will see a short error message instead of an answer.
-- **Searching by meaning:** the search matches meaning, not exact numbers, so a question like "explain article 14" can come back "not found" even when the text is there; asking about the idea ("what does the constitution say about equality before the law?") works better.
+- **Searching by meaning:** the search matches meaning, and numbered documents (laws, syllabi with numbered sections) are split at their numbered headings so "what does article 32 say" works. A short number-only question like "article 17" can still come back "not found"; adding a few words ("what does article 17 say about untouchability") works better.
 - **Scanned PDFs** (images of pages with no text) are not supported; they are reported as "this document is invalid".
 - Your key lives only in `Document_RAG_API/.env`, which is git-ignored. Uploaded PDFs, the vector store and conversations live in `Document_RAG_API/storage/` (also git-ignored).
 - Retrieval check used during the build: `Document_RAG_API/tests/test_grounding.py` (run `python tests/make_sample_pdf.py sample.pdf`, upload it, then `python tests/test_grounding.py`).

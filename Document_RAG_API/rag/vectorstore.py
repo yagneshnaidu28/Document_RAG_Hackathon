@@ -10,7 +10,15 @@ from langchain_huggingface import HuggingFaceEmbeddings
 STORAGE = Path(__file__).resolve().parent.parent / "storage"
 CHROMA_DIR = STORAGE / "chroma"
 COLLECTION = "document"
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+# bge models are trained to see this prefix in front of a search question
+QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
+MAX_TOKENS = 256
+
+
+class BgeEmbeddings(HuggingFaceEmbeddings):
+    def embed_query(self, text: str) -> list[float]:
+        return super().embed_query(QUERY_PREFIX + text)
 
 
 @lru_cache(maxsize=1)
@@ -18,9 +26,12 @@ def get_embeddings():
     import torch
 
     torch.set_num_threads(os.cpu_count() or 4)  # torch defaults to half the cores
-    return HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL, encode_kwargs={"batch_size": 32}
+    emb = BgeEmbeddings(
+        model_name=EMBEDDING_MODEL,
+        encode_kwargs={"batch_size": 32, "normalize_embeddings": True},
     )
+    emb._client.max_seq_length = MAX_TOKENS
+    return emb
 
 
 def get_store() -> Chroma:
