@@ -60,7 +60,7 @@ Open http://localhost:4000.
 ## Notes
 
 - **Gemini free tier** allows roughly 20 requests per day per model. The chat tries several Gemini models in order (set your own list with `GEMINI_MODELS` in `.env`). If every model is rate-limited you will see a short error message instead of an answer.
-- **Searching by meaning:** the search matches meaning, and numbered documents (laws, syllabi with numbered sections) are split at their numbered headings so "what does article 32 say" works. A short number-only question like "article 17" can still come back "not found"; adding a few words ("what does article 17 say about untouchability") works better.
+- **How documents are split:** structured documents (laws, contracts, syllabi, textbooks) are cut at their headings ("Article 32", "Clause 7", "Unit 2", "Section 4.2") and each piece is labelled, so "what does clause 7 say" works. Documents with no clear headings are split into plain overlapping chunks. The search matches meaning, so telling apart many near-identical numbered sections by number alone (topic 2.3 vs 2.4) can still miss; adding a few words about the topic helps.
 - **Scanned PDFs** (images of pages with no text) are not supported; they are reported as "this document is invalid".
 - Your key lives only in `Document_RAG_API/.env`, which is git-ignored. Uploaded PDFs, the vector store and conversations live in `Document_RAG_API/storage/` (also git-ignored).
 - Retrieval check used during the build: `Document_RAG_API/tests/test_grounding.py` (run `python tests/make_sample_pdf.py sample.pdf`, upload it, then `python tests/test_grounding.py`).
