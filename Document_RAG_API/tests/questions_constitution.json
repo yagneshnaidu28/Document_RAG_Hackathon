@@ -1,0 +1,18 @@
+[
+  {"q": "what article 32 says", "expect": "right to move the supreme court by appropriate proceedings"},
+  {"q": "give me about article 32", "expect": "right to move the supreme court by appropriate proceedings"},
+  {"q": "what does article 23 says", "expect": "traffic in human beings and begar"},
+  {"q": "What does Article 14 say?", "expect": "shall not deny to any person equality before the law"},
+  {"q": "What does Article 21 say about life and personal liberty?", "expect": "deprived of his life or personal liberty"},
+  {"q": "explain article 19", "expect": "freedom of speech and expression"},
+  {"q": "what does article 24 say", "expect": "no child below the age of fourteen years"},
+  {"q": "article 17", "expect": "is abolished and its practice in any form is forbidden"},
+  {"q": "what is article 44", "expect": "uniform civil code"},
+  {"q": "what is article 21a", "expect": "free and compulsory education"},
+  {"q": "Who appoints the Prime Minister?", "expect": "prime minister shall be appointed by the president"},
+  {"q": "What is the minimum age to become President?", "expect": "completed the age of thirty-five years"},
+  {"q": "What is the official language of the Union?", "expect": "hindi in devanagari script"},
+  {"q": "How is the Vice-President elected?", "expect": "vice-president shall be elected"},
+  {"q": "what is article 370", "expect": "temporary provisions with respect to the state of jammu and kashmir"},
+  {"q": "what does the constitution say about equality before the law", "expect": "equality before the law or the equal protection"}
+]
